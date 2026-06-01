@@ -19,6 +19,7 @@ const serializeLeave = (leave: {
   rejectedAt?: Date | null;
   reviewNote?: string | null;
   createdAt?: Date;
+  updatedAt?: Date;
   employee?: { firstName: string; lastName: string; department: string };
 }) => ({
   id: leave.id,
@@ -43,6 +44,9 @@ const serializeLeave = (leave: {
       : []),
     ...(leave.rejectedAt
       ? [{ label: "Rejected", at: leave.rejectedAt, by: leave.rejectedBy, note: leave.reviewNote }]
+      : []),
+    ...(leave.status === "CANCELED"
+      ? [{ label: "Canceled", at: leave.updatedAt, note: leave.reviewNote }]
       : [])
   ]
 });
@@ -66,6 +70,15 @@ export const leaveController = {
   reject: async (req: Request, res: Response) => {
     const leave = await leaveService.reject(req.params.id, req.user!.id, req.body.reviewNote);
     return sendResponse(res, 200, "Leave rejected", serializeLeave(leave));
+  },
+  cancel: async (req: Request, res: Response) => {
+    const leave = await leaveService.cancel({
+      id: req.params.id,
+      requesterId: req.user!.id,
+      requesterRole: req.user!.role,
+      reviewNote: req.body.reviewNote
+    });
+    return sendResponse(res, 200, "Leave canceled", serializeLeave(leave));
   },
   getById: async (req: Request, res: Response) => {
     const leave = await leaveService.getById({

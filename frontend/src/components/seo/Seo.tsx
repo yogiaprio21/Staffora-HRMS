@@ -10,7 +10,7 @@ type SeoProps = {
 export const Seo = ({
   title,
   description = APP_TAGLINE,
-  noIndex = true
+  noIndex = false
 }: SeoProps) => {
   const pageTitle = title ? `${title} | ${APP_NAME}` : APP_NAME;
   return (

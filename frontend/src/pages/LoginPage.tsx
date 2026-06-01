@@ -2,8 +2,19 @@ import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useNavigate } from "react-router-dom";
-import { Eye, EyeOff, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import {
+  Activity,
+  ArrowRight,
+  CalendarCheck,
+  Eye,
+  EyeOff,
+  LockKeyhole,
+  Mail,
+  PlayCircle,
+  ShieldCheck,
+  Users
+} from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Input } from "../components/ui/Input";
 import { Card } from "../components/ui/Card";
@@ -27,6 +38,12 @@ const schema = z.object({
 });
 
 type FormValues = z.infer<typeof schema>;
+
+const highlights = [
+  { label: "Direktori karyawan", value: "100 data demo", icon: Users },
+  { label: "Alur cuti", value: "Persetujuan transparan", icon: CalendarCheck },
+  { label: "Log aktivitas", value: "Aktivitas terlacak", icon: Activity }
+];
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -66,26 +83,60 @@ export const LoginPage = () => {
   return (
     <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
       <Seo title="Masuk" description="Masuk ke Staffora HRMS untuk mengelola data karyawan, cuti, dan laporan HR." noIndex={false} />
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl items-center gap-8 lg:grid-cols-[0.9fr_1.1fr]">
-        <div className="hidden space-y-6 lg:block">
-          <div className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm">
-            <ShieldCheck size={16} />
-            Ruang kerja HR aman
-          </div>
-          <div className="max-w-xl">
-            <h1 className="text-5xl font-semibold tracking-normal text-slate-950">{APP_NAME}</h1>
-            <p className="mt-4 max-w-lg text-lg leading-8 text-slate-600">{APP_TAGLINE}</p>
-          </div>
-          <div className="grid max-w-xl grid-cols-3 gap-3">
-            {["Karyawan", "Cuti", "Audit"].map((item) => (
-              <div key={item} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
-                <p className="text-sm font-semibold text-slate-900">{item}</p>
-                <div className="mt-3 h-1.5 rounded-full bg-slate-200" />
+      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="bg-slate-950 p-6 text-white sm:p-8 lg:flex lg:flex-col lg:justify-between">
+          <div className="space-y-8">
+            <div className="inline-flex items-center gap-3">
+              <span className="rounded-2xl bg-white p-3 text-slate-950">
+                <StafforaLogo compact />
+              </span>
+              <span>
+                <span className="block text-xl font-semibold">{APP_NAME}</span>
+                <span className="block text-sm text-slate-300">Portfolio HRMS</span>
+              </span>
+            </div>
+            <div className="max-w-xl">
+              <div className="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-slate-100">
+                <ShieldCheck size={16} />
+                Mode demo publik lihat saja
               </div>
-            ))}
+              <h1 className="mt-5 text-4xl font-semibold tracking-normal text-white sm:text-5xl">
+                Kelola karyawan, cuti, dan audit dalam satu ruang kerja.
+              </h1>
+              <p className="mt-4 max-w-lg text-base leading-7 text-slate-300">{APP_TAGLINE}</p>
+              <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                <Link to="/preview/dashboard">
+                  <Button type="button" variant="light" className="w-full sm:w-auto">
+                    <PlayCircle size={16} />
+                    Lihat Demo Publik
+                  </Button>
+                </Link>
+                <button
+                  type="button"
+                  className="inline-flex min-h-11 items-center justify-center gap-2 rounded-lg border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-white/15"
+                  onClick={() => fillDemo(DEMO_HR_EMAIL)}
+                >
+                  Isi akses HR
+                  <ArrowRight size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+          <div className="mt-8 grid gap-3 sm:grid-cols-3 lg:mt-12">
+            {highlights.map((item) => {
+              const Icon = item.icon;
+              return (
+                <div key={item.label} className="rounded-xl border border-white/10 bg-white/5 p-4">
+                  <Icon size={18} className="text-emerald-300" />
+                  <p className="mt-3 text-sm font-semibold text-white">{item.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-300">{item.value}</p>
+                </div>
+              );
+            })}
           </div>
         </div>
-        <Card className="mx-auto w-full max-w-md space-y-6 p-6 sm:p-8">
+        <div className="flex items-center justify-center p-5 sm:p-8">
+        <Card className="w-full max-w-md space-y-6 p-6 sm:p-8">
           <div className="space-y-2">
             <div className="inline-flex rounded-2xl bg-slate-950 p-3 text-white">
               <StafforaLogo compact />
@@ -99,6 +150,7 @@ export const LoginPage = () => {
             <Input
               label="Email kerja"
               type="email"
+              autoComplete="email"
               placeholder="name@company.com"
               hint="Gunakan email yang terdaftar di data karyawan."
               leftIcon={<Mail size={16} />}
@@ -108,7 +160,8 @@ export const LoginPage = () => {
             <Input
               label="Kata sandi"
               type={showPassword ? "text" : "password"}
-              placeholder="Enter password"
+              autoComplete="current-password"
+              placeholder="Masukkan kata sandi"
               leftIcon={<LockKeyhole size={16} />}
               rightElement={
                 <IconButton
@@ -130,6 +183,12 @@ export const LoginPage = () => {
             <Button type="submit" className="w-full" disabled={isSubmitting}>
               {isSubmitting ? "Masuk..." : "Masuk"}
             </Button>
+            <Link to="/preview/dashboard" className="block">
+              <Button type="button" variant="outline" className="w-full">
+                <PlayCircle size={16} />
+                Lihat Demo Tanpa Login
+              </Button>
+            </Link>
             {DEMO_MODE ? (
               <div className="space-y-3 rounded-xl border border-slate-200 bg-slate-50 p-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Akses demo</p>
@@ -155,6 +214,7 @@ export const LoginPage = () => {
             ) : null}
           </form>
         </Card>
+        </div>
       </div>
     </div>
   );

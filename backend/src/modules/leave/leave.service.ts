@@ -144,6 +144,54 @@ export const leaveService = {
     });
     return rejected;
   },
+  cancel: async (params: {
+    id: string;
+    requesterId: string;
+    requesterRole: Role;
+    reviewNote?: string;
+  }) => {
+    const leave = await leaveRepository.findById(params.id);
+    if (!leave) {
+      throw new AppError("Leave request not found", 404);
+    }
+    if (leave.status !== LeaveStatus.PENDING) {
+      throw new AppError("Only pending leave requests can be canceled", 400);
+    }
+    const isOwner = leave.employeeId === params.requesterId;
+    const isHrReviewer = params.requesterRole === Role.SUPER_ADMIN || params.requesterRole === Role.HR;
+    if (!isOwner && !isHrReviewer) {
+      throw new AppError("Leave request not found", 404);
+    }
+
+    const canceled = await leaveRepository.cancel(params.id, params.reviewNote);
+    await activityService.log({
+      action: "LEAVE_CANCELED",
+      entityType: "LeaveRequest",
+      entityId: canceled.id,
+      actorId: params.requesterId,
+      targetEmployeeId: canceled.employeeId,
+      message: `Cuti ${canceled.employee.firstName} ${canceled.employee.lastName} dibatalkan`,
+      metadata: { reviewNote: params.reviewNote }
+    });
+
+    if (isOwner) {
+      await notificationService.notifyRoles([Role.SUPER_ADMIN, Role.HR], {
+        title: "Pengajuan cuti dibatalkan",
+        description: `${canceled.employee.firstName} ${canceled.employee.lastName} membatalkan pengajuan cuti`,
+        href: "/leave-approvals?status=CANCELED",
+        tone: "info"
+      });
+    } else {
+      await notificationService.notifyUser({
+        userId: canceled.employeeId,
+        title: "Pengajuan cuti dibatalkan",
+        description: params.reviewNote || "Pengajuan cuti Anda telah dibatalkan oleh HR.",
+        href: "/profile",
+        tone: "info"
+      });
+    }
+    return canceled;
+  },
   getById: async (params: { id: string; requesterId: string; requesterRole: Role }) => {
     const leave = await leaveRepository.findById(params.id);
     if (!leave) {

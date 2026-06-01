@@ -63,4 +63,15 @@ describe("employeeService", () => {
       statusCode: 409
     });
   });
+
+  it("blocks HR from assigning Super Admin role", async () => {
+    mockedEmployeeRepository.findById.mockResolvedValue(employee);
+
+    await expect(
+      employeeService.update(employee.id, { role: Role.SUPER_ADMIN }, "hr-1", Role.HR)
+    ).rejects.toMatchObject({
+      message: "Only Super Admin can assign Super Admin role",
+      statusCode: 403
+    });
+  });
 });

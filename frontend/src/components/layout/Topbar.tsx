@@ -13,11 +13,13 @@ import type { Employee } from "../../types";
 export const Topbar = ({
   user,
   onLogout,
-  onOpenSidebar
+  onOpenSidebar,
+  isPreviewMode = false
 }: {
   user: Employee;
   onLogout: () => void;
   onOpenSidebar: () => void;
+  isPreviewMode?: boolean;
 }) => {
   const notifications = useNotifications();
   const markRead = useMarkNotificationRead();
@@ -73,6 +75,7 @@ export const Topbar = ({
                 <button
                   type="button"
                   className="inline-flex items-center gap-1 text-xs font-medium text-primary-700 hover:text-primary-800"
+                  disabled={isPreviewMode}
                   onClick={() => markAllRead.mutate()}
                 >
                   <CheckCheck size={14} />
@@ -106,6 +109,7 @@ export const Topbar = ({
                           <button
                             type="button"
                             className="mt-2 text-xs font-medium text-primary-700 hover:text-primary-800"
+                            disabled={isPreviewMode}
                             onClick={() => markRead.mutate(item.id)}
                           >
                             Tandai dibaca
@@ -119,10 +123,16 @@ export const Topbar = ({
             ) : (
               <p className="px-2 py-3 text-sm text-slate-500">Tidak ada notifikasi aktif.</p>
             )}
+            <Link
+              to={isPreviewMode ? "/preview/notifications" : "/notifications"}
+              className="block rounded-lg px-3 py-2 text-sm font-semibold text-primary-700 hover:bg-primary-50"
+            >
+              Lihat semua notifikasi
+            </Link>
           </div>
         </DropdownMenu>
         <span className="hidden rounded-full bg-slate-100 px-3 py-1 font-medium sm:inline-flex">
-          {formatRole(user.role)}
+          {isPreviewMode ? "Preview Publik" : formatRole(user.role)}
         </span>
         <DropdownMenu
           trigger={
@@ -142,13 +152,25 @@ export const Topbar = ({
               </p>
               <p className="mt-1 text-xs text-slate-500">{user.email}</p>
             </div>
-            <Link to="/profile" className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50">
-              Lihat profil
+            <Link
+              to={isPreviewMode ? "/preview/profile" : "/profile"}
+              className="block rounded-lg px-3 py-2 text-sm text-slate-700 hover:bg-slate-50"
+            >
+              {isPreviewMode ? "Lihat profil demo" : "Lihat profil"}
             </Link>
-            <Button variant="ghost" type="button" onClick={onLogout} className="w-full justify-start">
-              <LogOut size={16} />
-              Keluar
-            </Button>
+            {isPreviewMode ? (
+              <Link to="/login" className="block">
+                <Button variant="outline" type="button" className="w-full justify-start">
+                  <LogOut size={16} />
+                  Masuk
+                </Button>
+              </Link>
+            ) : (
+              <Button variant="dangerSoft" type="button" onClick={onLogout} className="w-full justify-start">
+                <LogOut size={16} />
+                Keluar
+              </Button>
+            )}
           </div>
         </DropdownMenu>
       </div>

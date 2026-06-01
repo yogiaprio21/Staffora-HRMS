@@ -13,6 +13,7 @@ import { PageHeader } from "../components/ui/PageHeader";
 import { FormSection } from "../components/ui/FormSection";
 import { useToast } from "../components/ui/ToastContext";
 import { Seo } from "../components/seo/Seo";
+import { useAuth } from "../features/auth/AuthContext";
 import {
   useCreateEmployee,
   useEmployee,
@@ -59,6 +60,7 @@ export const EmployeeFormPage = () => {
   const { id } = useParams();
   const isEdit = Boolean(id);
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [pageError, setPageError] = useState<string | null>(null);
   const { notify } = useToast();
   const createEmployee = useCreateEmployee();
@@ -166,7 +168,7 @@ export const EmployeeFormPage = () => {
       <PageHeader
         title={isEdit ? "Ubah Karyawan" : "Tambah Karyawan"}
         eyebrow="Form Karyawan"
-        description="Lengkapi identitas, struktur organisasi, akses, dan saldo cuti dengan informasi yang mudah diverifikasi HR."
+        description="Lengkapi identitas, struktur organisasi, akses, dan kuota cuti dengan informasi yang mudah diverifikasi HR."
         actions={
           <Button variant="secondary" type="button" onClick={goBack}>
             <ArrowLeft size={16} />
@@ -197,7 +199,7 @@ export const EmployeeFormPage = () => {
         <FormSection title="Organisasi & Akses" description="Peran menentukan menu dan izin yang tersedia.">
           <div className="grid gap-4 md:grid-cols-2">
             <Select label="Peran" error={errors.role?.message} {...register("role")}>
-              <option value="SUPER_ADMIN">Super Admin</option>
+              {user?.role === "SUPER_ADMIN" ? <option value="SUPER_ADMIN">Super Admin</option> : null}
               <option value="HR">HR</option>
               <option value="EMPLOYEE">Karyawan</option>
             </Select>
@@ -213,12 +215,12 @@ export const EmployeeFormPage = () => {
         </FormSection>
 
         {isEdit ? (
-          <FormSection title="Kebijakan Cuti" description="Saldo cuti tersisa untuk workflow pengajuan.">
+          <FormSection title="Kebijakan Cuti" description="Atur sisa hak cuti yang digunakan dalam alur pengajuan.">
             <Input
-              label="Saldo cuti"
+              label="Sisa hak cuti"
               type="number"
               placeholder="20"
-              hint="Saldo ini dikurangi ketika cuti disetujui."
+              hint="Nilai ini dikurangi ketika cuti disetujui."
               error={errors.leaveBalance?.message}
               {...register("leaveBalance")}
             />

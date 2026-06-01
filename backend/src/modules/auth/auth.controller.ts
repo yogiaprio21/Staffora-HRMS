@@ -35,7 +35,7 @@ const cookieOptions = {
 
 export const authController = {
   register: async (req: Request, res: Response) => {
-    const employee = await authService.registerEmployee(req.body);
+    const employee = await authService.registerEmployee({ ...req.body, actorRole: req.user?.role });
     return sendResponse(res, 201, "Employee registered", serializeEmployee(employee));
   },
   login: async (req: Request, res: Response) => {
@@ -75,5 +75,13 @@ export const authController = {
   me: async (req: Request, res: Response) => {
     const employee = await authService.me(req.user!.id);
     return sendResponse(res, 200, "Authenticated employee fetched", serializeEmployee(employee));
+  },
+  changePassword: async (req: Request, res: Response) => {
+    await authService.changePassword({
+      employeeId: req.user!.id,
+      currentPassword: req.body.currentPassword,
+      newPassword: req.body.newPassword
+    });
+    return sendResponse(res, 200, "Password updated");
   }
 };

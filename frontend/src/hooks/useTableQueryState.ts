@@ -47,6 +47,18 @@ export const useTableQueryState = (defaults: TableQueryDefaults = {}) => {
   const setFilter = (key: string, value: string) => update({ [key]: value, page: 1 });
   const setPage = (page: number) => update({ page });
   const setPageSize = (limit: number) => update({ limit, page: 1 });
+  const clearFilters = () =>
+    update({
+      search: undefined,
+      department: undefined,
+      role: undefined,
+      status: undefined,
+      action: undefined,
+      entityType: undefined,
+      dateFrom: undefined,
+      dateTo: undefined,
+      page: 1
+    });
   const setSorting = (sorting: SortingState) => {
     const first = sorting[0];
     update({
@@ -59,6 +71,7 @@ export const useTableQueryState = (defaults: TableQueryDefaults = {}) => {
   return {
     ...state,
     setFilter,
+    clearFilters,
     setPage,
     setPageSize,
     setSorting

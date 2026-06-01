@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Search, X } from "lucide-react";
 import { Input } from "./Input";
 import { IconButton } from "./IconButton";
@@ -7,30 +8,58 @@ export const SearchInput = ({
   value,
   onChange,
   placeholder = "Cari data",
-  onClear
+  onClear,
+  debounceMs = 300
 }: {
   label?: string;
   value: string;
   onChange: (value: string) => void;
   placeholder?: string;
   onClear?: () => void;
-}) => (
-  <Input
-    label={label}
-    value={value}
-    placeholder={placeholder}
-    onChange={(event) => onChange(event.target.value)}
-    leftIcon={<Search size={16} />}
-    rightElement={
-      value ? (
-        <IconButton
-          label="Hapus pencarian"
-          className="h-8 w-8 border-none bg-transparent"
-          onClick={onClear || (() => onChange(""))}
-        >
-          <X size={16} />
-        </IconButton>
-      ) : null
+  debounceMs?: number;
+}) => {
+  const [localValue, setLocalValue] = useState(value);
+
+  useEffect(() => {
+    setLocalValue(value);
+  }, [value]);
+
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (localValue !== value) {
+        onChange(localValue);
+      }
+    }, debounceMs);
+    return () => window.clearTimeout(timeout);
+  }, [debounceMs, localValue, onChange, value]);
+
+  const clearSearch = () => {
+    setLocalValue("");
+    if (onClear) {
+      onClear();
+    } else {
+      onChange("");
     }
-  />
-);
+  };
+
+  return (
+    <Input
+      label={label}
+      value={localValue}
+      placeholder={placeholder}
+      onChange={(event) => setLocalValue(event.target.value)}
+      leftIcon={<Search size={16} />}
+      rightElement={
+        localValue ? (
+          <IconButton
+            label="Hapus pencarian"
+            className="h-8 w-8 border-none bg-transparent"
+            onClick={clearSearch}
+          >
+            <X size={16} />
+          </IconButton>
+        ) : null
+      }
+    />
+  );
+};

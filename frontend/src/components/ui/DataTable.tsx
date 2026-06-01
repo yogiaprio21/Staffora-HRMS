@@ -6,6 +6,7 @@ import {
   type SortingState
 } from "@tanstack/react-table";
 import type { ReactNode } from "react";
+import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { EmptyState } from "./EmptyState";
 import { Pagination } from "./Pagination";
 
@@ -62,7 +63,7 @@ export const DataTable = <TData,>({
         <div className="space-y-3 md:hidden">{data.map((row) => mobileRender(row))}</div>
       ) : null}
       <div className="hidden overflow-x-auto rounded-lg border border-slate-200 bg-white md:block">
-        <table className="min-w-[760px] divide-y divide-slate-200 text-sm">
+        <table className="w-full min-w-[760px] table-auto divide-y divide-slate-200 text-sm">
           <thead className="bg-slate-50 text-left text-xs font-semibold uppercase tracking-wide text-slate-500">
             {table.getHeaderGroups().map((headerGroup) => (
               <tr key={headerGroup.id}>
@@ -70,18 +71,26 @@ export const DataTable = <TData,>({
                   const canSort = header.column.getCanSort();
                   const sortState = header.column.getIsSorted();
                   return (
-                    <th key={header.id} className="whitespace-nowrap px-4 py-3">
+                    <th key={header.id} className="px-4 py-3">
                       {header.isPlaceholder ? null : (
                         <button
                           type="button"
                           disabled={!canSort}
                           onClick={header.column.getToggleSortingHandler()}
-                          className={`inline-flex items-center gap-1 text-left ${
+                          className={`inline-flex w-full items-center gap-1 text-left ${
                             canSort ? "hover:text-slate-900" : ""
                           }`}
                         >
                           {flexRender(header.column.columnDef.header, header.getContext())}
-                          {sortState ? <span>{sortState === "asc" ? "↑" : "↓"}</span> : null}
+                          {canSort ? (
+                            sortState === "asc" ? (
+                              <ArrowUp size={13} aria-hidden="true" />
+                            ) : sortState === "desc" ? (
+                              <ArrowDown size={13} aria-hidden="true" />
+                            ) : (
+                              <ArrowUpDown size={13} className="text-slate-300" aria-hidden="true" />
+                            )
+                          ) : null}
                         </button>
                       )}
                     </th>
@@ -94,7 +103,7 @@ export const DataTable = <TData,>({
             {table.getRowModel().rows.map((row) => (
               <tr key={row.id} className="border-b border-slate-100 transition hover:bg-slate-50/80 last:border-none">
                 {row.getVisibleCells().map((cell) => (
-                  <td key={cell.id} className="px-4 py-3 align-top text-slate-700">
+                  <td key={cell.id} className="break-words px-4 py-3 align-top text-slate-700">
                     {flexRender(cell.column.columnDef.cell, cell.getContext())}
                   </td>
                 ))}

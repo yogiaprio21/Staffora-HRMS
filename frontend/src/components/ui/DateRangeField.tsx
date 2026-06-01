@@ -6,7 +6,8 @@ export const DateRangeField = ({
   dateFrom,
   dateTo,
   onDateFromChange,
-  onDateToChange
+  onDateToChange,
+  className = ""
 }: {
   fromLabel?: string;
   toLabel?: string;
@@ -14,8 +15,9 @@ export const DateRangeField = ({
   dateTo: string;
   onDateFromChange: (value: string) => void;
   onDateToChange: (value: string) => void;
+  className?: string;
 }) => (
-  <div className="grid gap-3 sm:grid-cols-2">
+  <div className={`grid gap-3 sm:grid-cols-2 ${className}`}>
     <DatePickerField
       label={fromLabel}
       value={dateFrom}

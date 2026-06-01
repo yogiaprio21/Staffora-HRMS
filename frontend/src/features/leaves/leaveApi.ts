@@ -40,5 +40,9 @@ export const leaveApi = {
   reject: async ({ id, reviewNote }: { id: string; reviewNote: string }) => {
     const response = await api.patch(`/leaves/${id}/reject`, { reviewNote });
     return response.data as { data: LeaveRequest };
+  },
+  cancel: async ({ id, reviewNote }: { id: string; reviewNote?: string }) => {
+    const response = await api.patch(`/leaves/${id}/cancel`, { reviewNote });
+    return response.data as { data: LeaveRequest };
   }
 };

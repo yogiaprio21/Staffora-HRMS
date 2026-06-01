@@ -28,6 +28,7 @@ const getTokenExpiry = (token: string) => {
 
 export const authService = {
   registerEmployee: async (data: {
+    actorRole?: Role;
     firstName: string;
     lastName: string;
     email: string;
@@ -36,6 +37,9 @@ export const authService = {
     department: string;
     position?: string;
   }) => {
+    if (data.role === Role.SUPER_ADMIN && data.actorRole !== Role.SUPER_ADMIN) {
+      throw new AppError("Only Super Admin can create Super Admin accounts", 403);
+    }
     const existing = await authRepository.findEmployeeByEmail(data.email);
     if (existing) {
       throw new AppError("Email already in use", 409);
@@ -147,5 +151,22 @@ export const authService = {
       throw new AppError("Unauthorized", 401);
     }
     return employee;
+  },
+  changePassword: async (params: {
+    employeeId: string;
+    currentPassword: string;
+    newPassword: string;
+  }) => {
+    const employee = await authRepository.findEmployeeById(params.employeeId);
+    if (!employee || !employee.isActive) {
+      throw new AppError("Unauthorized", 401);
+    }
+    const valid = await bcrypt.compare(params.currentPassword, employee.passwordHash);
+    if (!valid) {
+      throw new AppError("Current password is incorrect", 400);
+    }
+    const passwordHash = await bcrypt.hash(params.newPassword, 12);
+    await authRepository.updatePassword(employee.id, passwordHash);
+    return true;
   }
 };

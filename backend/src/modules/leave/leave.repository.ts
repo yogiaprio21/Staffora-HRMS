@@ -132,5 +132,12 @@ export const leaveRepository = {
       data: { status: LeaveStatus.REJECTED, rejectedBy, rejectedAt, reviewNote },
       include: { employee: true }
     });
+  },
+  cancel: async (id: string, reviewNote?: string) => {
+    return prisma.leaveRequest.update({
+      where: { id },
+      data: { status: LeaveStatus.CANCELED, reviewNote },
+      include: { employee: true }
+    });
   }
 };

@@ -39,6 +39,14 @@ export const rejectLeaveSchema = z.object({
   query: z.object({})
 });
 
+export const cancelLeaveSchema = z.object({
+  body: z.object({
+    reviewNote: z.string().trim().min(1).optional()
+  }),
+  params: z.object({ id: z.string().uuid() }),
+  query: z.object({})
+});
+
 export const leaveIdSchema = z.object({
   body: z.object({}),
   params: z.object({ id: z.string().uuid() }),
@@ -51,7 +59,7 @@ export const listLeaveSchema = z.object({
   query: z.object({
     page: z.coerce.number().min(1).default(1),
     limit: z.coerce.number().min(1).max(100).default(20),
-    status: z.enum(["PENDING", "APPROVED", "REJECTED"]).optional(),
+    status: z.enum(["PENDING", "APPROVED", "REJECTED", "CANCELED"]).optional(),
     employeeId: z.string().uuid().optional(),
     dateFrom: validDateOnlySchema.optional(),
     dateTo: validDateOnlySchema.optional(),

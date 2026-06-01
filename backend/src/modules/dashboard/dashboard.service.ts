@@ -44,7 +44,12 @@ export const dashboardService = {
       totalPendingLeaves,
       totalApprovedLeavesThisMonth: approvedThisMonth,
       leaveSummaryByDepartment,
-      leaveSummaryByStatus,
+      leaveSummaryByStatus: {
+        PENDING: leaveSummaryByStatus.PENDING || 0,
+        APPROVED: leaveSummaryByStatus.APPROVED || 0,
+        REJECTED: leaveSummaryByStatus.REJECTED || 0,
+        CANCELED: leaveSummaryByStatus.CANCELED || 0
+      },
       recentLeaves: recentLeaves.map(serializeLeave),
       pendingApprovals: pendingApprovals.map(serializeLeave),
       upcomingLeaves: upcomingLeaves.map(serializeLeave),

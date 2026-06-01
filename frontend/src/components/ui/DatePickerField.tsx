@@ -1,4 +1,4 @@
-import { useId } from "react";
+import { useId, useState } from "react";
 import * as Popover from "@radix-ui/react-popover";
 import { CalendarDays } from "lucide-react";
 import { DayPicker } from "react-day-picker";
@@ -26,6 +26,7 @@ export const DatePickerField = ({
   disabled?: boolean;
 }) => {
   const idValue = useId();
+  const [open, setOpen] = useState(false);
   const selected = toDate(value);
 
   return (
@@ -33,7 +34,7 @@ export const DatePickerField = ({
       <label htmlFor={idValue} className="font-medium">
         {label}
       </label>
-      <Popover.Root>
+      <Popover.Root open={open} onOpenChange={setOpen}>
         <Popover.Trigger asChild>
           <button
             id={idValue}
@@ -52,13 +53,18 @@ export const DatePickerField = ({
         <Popover.Portal>
           <Popover.Content
             align="start"
+            side="bottom"
             sideOffset={8}
-            className="z-50 rounded-xl border border-slate-200 bg-white p-3 shadow-xl animate-fade-in"
+            collisionPadding={16}
+            className="z-50 w-[min(22rem,calc(100vw-2rem))] rounded-xl border border-slate-200 bg-white p-3 shadow-xl animate-fade-in"
           >
             <DayPicker
               mode="single"
               selected={selected}
-              onSelect={(date) => onChange(toDateOnly(date))}
+              onSelect={(date) => {
+                onChange(toDateOnly(date));
+                setOpen(false);
+              }}
               locale={id}
               showOutsideDays
               weekStartsOn={1}

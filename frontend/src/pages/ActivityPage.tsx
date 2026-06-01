@@ -24,6 +24,7 @@ import { getErrorMessage } from "../lib/errors";
 import { formatActivityAction, formatDateTime } from "../lib/labels";
 import type { ActivityLog } from "../types";
 import { useTableQueryState } from "../hooks/useTableQueryState";
+import { usePreviewGuard } from "../features/preview/previewMode";
 
 const actions = [
   "EMPLOYEE_CREATED",
@@ -32,8 +33,14 @@ const actions = [
   "EMPLOYEE_RESTORED",
   "LEAVE_SUBMITTED",
   "LEAVE_APPROVED",
-  "LEAVE_REJECTED"
+  "LEAVE_REJECTED",
+  "LEAVE_CANCELED"
 ];
+
+const entityLabel: Record<string, string> = {
+  Employee: "Karyawan",
+  LeaveRequest: "Pengajuan Cuti"
+};
 
 export const ActivityPage = () => {
   const tableState = useTableQueryState({ limit: 20 });
@@ -41,6 +48,7 @@ export const ActivityPage = () => {
   const [exporting, setExporting] = useState(false);
   const [exportError, setExportError] = useState<string | null>(null);
   const { notify } = useToast();
+  const { guardPreviewAction } = usePreviewGuard();
   const activityQuery = useActivity({
     page: tableState.page,
     limit: tableState.limit,
@@ -82,12 +90,21 @@ export const ActivityPage = () => {
         enableSorting: false,
         cell: ({ row }) => <Badge label={formatActivityAction(row.original.action)} variant="neutral" />
       },
-      { id: "entityType", header: "Entitas", accessorKey: "entityType", enableSorting: false }
+      {
+        id: "entityType",
+        header: "Entitas",
+        accessorKey: "entityType",
+        enableSorting: false,
+        cell: ({ row }) => entityLabel[row.original.entityType] || row.original.entityType
+      }
     ],
     []
   );
 
   const handleExport = async () => {
+    if (guardPreviewAction("Mode demo tidak mengunduh data. Masuk sebagai HR untuk mengekspor log aktivitas.")) {
+      return;
+    }
     setExportError(null);
     setExporting(true);
     try {
@@ -108,19 +125,46 @@ export const ActivityPage = () => {
       setExporting(false);
     }
   };
+  const activeFilters = [
+    tableState.search
+      ? { key: "search", label: "Pencarian", value: tableState.search, onRemove: () => tableState.setFilter("search", "") }
+      : null,
+    tableState.action
+      ? {
+          key: "action",
+          label: "Aksi",
+          value: formatActivityAction(tableState.action),
+          onRemove: () => tableState.setFilter("action", "")
+        }
+      : null,
+    tableState.entityType
+      ? {
+          key: "entityType",
+          label: "Entitas",
+          value: entityLabel[tableState.entityType] || tableState.entityType,
+          onRemove: () => tableState.setFilter("entityType", "")
+        }
+      : null,
+    tableState.dateFrom
+      ? { key: "dateFrom", label: "Dari", value: tableState.dateFrom, onRemove: () => tableState.setFilter("dateFrom", "") }
+      : null,
+    tableState.dateTo
+      ? { key: "dateTo", label: "Sampai", value: tableState.dateTo, onRemove: () => tableState.setFilter("dateTo", "") }
+      : null
+  ].filter(Boolean) as Array<{ key: string; label: string; value: string; onRemove: () => void }>;
 
   return (
     <div className="space-y-6">
       <Seo title="Log Aktivitas" />
       <PageHeader
         title="Log Aktivitas"
-        eyebrow="Audit Trail"
-        description="Audit trail perubahan penting karyawan, cuti, dan status workflow."
+        eyebrow="Log Sistem"
+        description="Catatan perubahan penting karyawan, cuti, dan status alur kerja."
         meta={<Badge label={`${activityQuery.data?.meta.total ?? 0} catatan`} variant="neutral" />}
         actions={
-          <Button variant="secondary" type="button" onClick={handleExport} disabled={exporting}>
+          <Button variant="outline" type="button" onClick={handleExport} disabled={exporting}>
             <Download size={16} />
-            {exporting ? "Mengunduh..." : "Ekspor CSV"}
+            {exporting ? "Mengunduh..." : "Unduh CSV"}
           </Button>
         }
       />
@@ -131,35 +175,47 @@ export const ActivityPage = () => {
           description="Cari perubahan, filter jenis aksi, dan cek detail actor untuk kebutuhan audit."
           icon={<FileClock className="h-5 w-5 text-slate-500" />}
         />
-        <Toolbar>
-          <SearchInput
-            label="Cari aktivitas"
-            placeholder="Cari pesan, aksi, atau entitas"
-            value={tableState.search}
-            onChange={(value) => tableState.setFilter("search", value)}
-          />
-          <Select
-            label="Aksi"
-            value={tableState.action}
-            onChange={(event) => tableState.setFilter("action", event.target.value)}
-          >
-            <option value="">Semua aksi</option>
-            {actions.map((action) => (
-              <option key={action} value={action}>
-                {formatActivityAction(action)}
-              </option>
-            ))}
-          </Select>
-          <Select
-            label="Entitas"
-            value={tableState.entityType}
-            onChange={(event) => tableState.setFilter("entityType", event.target.value)}
-          >
-            <option value="">Semua entitas</option>
-            <option value="Employee">Karyawan</option>
-            <option value="LeaveRequest">Pengajuan Cuti</option>
-          </Select>
+        <Toolbar
+          activeFilters={activeFilters}
+          onClear={tableState.clearFilters}
+          summary={`${activityQuery.data?.meta.total ?? 0} aktivitas sesuai filter`}
+          gridClassName="grid gap-3 lg:grid-cols-6"
+        >
+          <div className="lg:col-span-2">
+            <SearchInput
+              label="Cari aktivitas"
+              placeholder="Cari pesan, aksi, atau entitas"
+              value={tableState.search}
+              onChange={(value) => tableState.setFilter("search", value)}
+            />
+          </div>
+          <div>
+            <Select
+              label="Aksi"
+              value={tableState.action}
+              onChange={(event) => tableState.setFilter("action", event.target.value)}
+            >
+              <option value="">Semua aksi</option>
+              {actions.map((action) => (
+                <option key={action} value={action}>
+                  {formatActivityAction(action)}
+                </option>
+              ))}
+            </Select>
+          </div>
+          <div>
+            <Select
+              label="Entitas"
+              value={tableState.entityType}
+              onChange={(event) => tableState.setFilter("entityType", event.target.value)}
+            >
+              <option value="">Semua entitas</option>
+              <option value="Employee">Karyawan</option>
+              <option value="LeaveRequest">Pengajuan Cuti</option>
+            </Select>
+          </div>
           <DateRangeField
+            className="lg:col-span-2"
             fromLabel="Dari"
             toLabel="Sampai"
             dateFrom={tableState.dateFrom}
@@ -193,7 +249,7 @@ export const ActivityPage = () => {
                   </Button>
                 }
               >
-                <p>Entitas: {activity.entityType}</p>
+                <p>Entitas: {entityLabel[activity.entityType] || activity.entityType}</p>
                 <p>ID: {activity.entityId}</p>
               </MobileDataItem>
             )}
@@ -216,7 +272,7 @@ export const ActivityPage = () => {
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <p className="text-slate-500">Entitas</p>
-                <p className="font-medium text-slate-900">{selectedActivity.entityType}</p>
+                <p className="font-medium text-slate-900">{entityLabel[selectedActivity.entityType] || selectedActivity.entityType}</p>
               </div>
               <div>
                 <p className="text-slate-500">ID Entitas</p>

@@ -27,6 +27,9 @@ const ActivityPage = lazy(() =>
 const ProfilePage = lazy(() =>
   import("./pages/ProfilePage").then((module) => ({ default: module.ProfilePage }))
 );
+const NotificationsPage = lazy(() =>
+  import("./pages/NotificationsPage").then((module) => ({ default: module.NotificationsPage }))
+);
 const NotFoundPage = lazy(() =>
   import("./pages/NotFoundPage").then((module) => ({ default: module.NotFoundPage }))
 );
@@ -61,7 +64,18 @@ const App = () => (
         <Route element={<ProtectedRoute roles={["SUPER_ADMIN", "HR", "EMPLOYEE"]} />}>
           <Route path="/leaves" element={<LeaveSubmissionPage />} />
           <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/notifications" element={<NotificationsPage />} />
         </Route>
+      </Route>
+      <Route path="/preview" element={<AppShell />}>
+        <Route index element={<Navigate to="/preview/dashboard" replace />} />
+        <Route path="dashboard" element={<DashboardPage />} />
+        <Route path="employees" element={<EmployeesPage />} />
+        <Route path="leave-approvals" element={<LeaveApprovalPage />} />
+        <Route path="activity" element={<ActivityPage />} />
+        <Route path="leaves" element={<LeaveSubmissionPage />} />
+        <Route path="profile" element={<ProfilePage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
       </Route>
       <Route path="*" element={<NotFoundPage />} />
     </Routes>

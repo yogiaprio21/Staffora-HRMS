@@ -22,3 +22,15 @@ export const loginSchema = z.object({
   params: z.object({}),
   query: z.object({})
 });
+
+export const changePasswordSchema = z.object({
+  body: z.object({
+    currentPassword: z.string().min(8),
+    newPassword: z.string().min(8)
+  }).refine((data) => data.currentPassword !== data.newPassword, {
+    message: "New password must be different from current password",
+    path: ["newPassword"]
+  }),
+  params: z.object({}),
+  query: z.object({})
+});

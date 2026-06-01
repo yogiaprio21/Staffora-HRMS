@@ -52,7 +52,7 @@ const openApiSpec = {
           startDate: { type: "string", example: "2026-03-01T00:00:00.000Z" },
           endDate: { type: "string", example: "2026-03-03T00:00:00.000Z" },
           reason: { type: "string", example: "Annual leave" },
-          status: { type: "string", example: "PENDING" }
+          status: { type: "string", enum: ["PENDING", "APPROVED", "REJECTED", "CANCELED"], example: "PENDING" }
         }
       }
     }
@@ -219,7 +219,11 @@ const openApiSpec = {
         security: [{ bearerAuth: [] }],
         summary: "Leave history",
         parameters: [
-          { in: "query", name: "status", schema: { type: "string", example: "PENDING" } },
+          {
+            in: "query",
+            name: "status",
+            schema: { type: "string", enum: ["PENDING", "APPROVED", "REJECTED", "CANCELED"], example: "PENDING" }
+          },
           { in: "query", name: "employeeId", schema: { type: "string" } }
         ],
         responses: { "200": { description: "Leave history" } }
@@ -263,6 +267,15 @@ const openApiSpec = {
         summary: "Reject leave request",
         parameters: [{ in: "path", name: "id", required: true, schema: { type: "string" } }],
         responses: { "200": { description: "Leave rejected" } }
+      }
+    },
+    "/leaves/{id}/cancel": {
+      patch: {
+        tags: ["Leave"],
+        security: [{ bearerAuth: [] }],
+        summary: "Cancel pending leave request",
+        parameters: [{ in: "path", name: "id", required: true, schema: { type: "string" } }],
+        responses: { "200": { description: "Leave canceled" } }
       }
     },
     "/dashboard/stats": {

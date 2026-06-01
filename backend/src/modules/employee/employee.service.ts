@@ -5,9 +5,20 @@ import { employeeRepository } from "./employee.repository";
 import { activityService } from "../activity/activity.service";
 import { notificationService } from "../notification/notification.service";
 
+const assertCanManageRole = (
+  actorRole: Role | undefined,
+  targetRole: Role,
+  message = "Only Super Admin can manage Super Admin accounts"
+) => {
+  if (targetRole === Role.SUPER_ADMIN && actorRole !== Role.SUPER_ADMIN) {
+    throw new AppError(message, 403);
+  }
+};
+
 export const employeeService = {
   create: async (data: {
     actorId?: string;
+    actorRole?: Role;
     firstName: string;
     lastName: string;
     email: string;
@@ -16,6 +27,7 @@ export const employeeService = {
     department: string;
     position?: string;
   }) => {
+    assertCanManageRole(data.actorRole, data.role, "Only Super Admin can create Super Admin accounts");
     const existing = await employeeRepository.findByEmail(data.email);
     if (existing) {
       throw new AppError("Email already in use", 409);
@@ -61,11 +73,16 @@ export const employeeService = {
       leaveBalance: number;
       isActive: boolean;
     }>,
-    actorId?: string
+    actorId?: string,
+    actorRole?: Role
   ) => {
     const employee = await employeeRepository.findById(id);
     if (!employee) {
       throw new AppError("Employee not found", 404);
+    }
+    assertCanManageRole(actorRole, employee.role);
+    if (data.role) {
+      assertCanManageRole(actorRole, data.role, "Only Super Admin can assign Super Admin role");
     }
     if (data.email && data.email !== employee.email) {
       const existing = await employeeRepository.findByEmail(data.email);
@@ -109,11 +126,12 @@ export const employeeService = {
     }
     return updated;
   },
-  softDelete: async (id: string, actorId?: string) => {
+  softDelete: async (id: string, actorId?: string, actorRole?: Role) => {
     const employee = await employeeRepository.findById(id);
     if (!employee) {
       throw new AppError("Employee not found", 404);
     }
+    assertCanManageRole(actorRole, employee.role);
     const updated = await employeeRepository.softDelete(id);
     await activityService.log({
       action: "EMPLOYEE_DEACTIVATED",
@@ -132,11 +150,12 @@ export const employeeService = {
     });
     return updated;
   },
-  restore: async (id: string, actorId?: string) => {
+  restore: async (id: string, actorId?: string, actorRole?: Role) => {
     const employee = await employeeRepository.findAnyById(id);
     if (!employee) {
       throw new AppError("Employee not found", 404);
     }
+    assertCanManageRole(actorRole, employee.role);
     const updated = await employeeRepository.restore(id);
     await activityService.log({
       action: "EMPLOYEE_RESTORED",

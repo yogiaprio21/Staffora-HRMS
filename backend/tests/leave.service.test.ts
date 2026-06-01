@@ -10,6 +10,7 @@ jest.mock("../src/modules/leave/leave.repository", () => ({
     findById: jest.fn(),
     approveWithBalanceDeduction: jest.fn(),
     reject: jest.fn(),
+    cancel: jest.fn(),
     list: jest.fn()
   }
 }));
@@ -105,6 +106,42 @@ describe("leaveService", () => {
       approvedBy: "hr-1",
       days: 3,
       reviewNote: undefined
+    });
+  });
+
+  it("allows an employee to cancel their own pending leave request", async () => {
+    mockedLeaveRepository.findById.mockResolvedValue(pendingLeave);
+    mockedLeaveRepository.cancel.mockResolvedValue({
+      ...pendingLeave,
+      status: LeaveStatus.CANCELED,
+      reviewNote: "Jadwal berubah"
+    });
+
+    await leaveService.cancel({
+      id: "leave-1",
+      requesterId: "employee-1",
+      requesterRole: Role.EMPLOYEE,
+      reviewNote: "Jadwal berubah"
+    });
+
+    expect(mockedLeaveRepository.cancel).toHaveBeenCalledWith("leave-1", "Jadwal berubah");
+  });
+
+  it("blocks canceling an already processed leave request", async () => {
+    mockedLeaveRepository.findById.mockResolvedValue({
+      ...pendingLeave,
+      status: LeaveStatus.APPROVED
+    });
+
+    await expect(
+      leaveService.cancel({
+        id: "leave-1",
+        requesterId: "employee-1",
+        requesterRole: Role.EMPLOYEE
+      })
+    ).rejects.toMatchObject({
+      message: "Only pending leave requests can be canceled",
+      statusCode: 400
     });
   });
 });

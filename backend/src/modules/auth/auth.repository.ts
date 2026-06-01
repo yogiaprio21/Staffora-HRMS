@@ -23,6 +23,12 @@ export const authRepository = {
       where: { id, deletedAt: null }
     });
   },
+  updatePassword: async (id: string, passwordHash: string) => {
+    return prisma.employee.update({
+      where: { id },
+      data: { passwordHash }
+    });
+  },
   createRefreshToken: async (data: {
     id: string;
     employeeId: string;

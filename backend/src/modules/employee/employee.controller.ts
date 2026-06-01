@@ -27,11 +27,15 @@ const serializeEmployee = (employee: {
 
 export const employeeController = {
   create: async (req: Request, res: Response) => {
-    const employee = await employeeService.create({ ...req.body, actorId: req.user?.id });
+    const employee = await employeeService.create({
+      ...req.body,
+      actorId: req.user?.id,
+      actorRole: req.user?.role
+    });
     return sendResponse(res, 201, "Employee created", serializeEmployee(employee));
   },
   update: async (req: Request, res: Response) => {
-    const employee = await employeeService.update(req.params.id, req.body, req.user?.id);
+    const employee = await employeeService.update(req.params.id, req.body, req.user?.id, req.user?.role);
     return sendResponse(res, 200, "Employee updated", serializeEmployee(employee));
   },
   getById: async (req: Request, res: Response) => {
@@ -39,11 +43,11 @@ export const employeeController = {
     return sendResponse(res, 200, "Employee fetched", serializeEmployee(employee));
   },
   softDelete: async (req: Request, res: Response) => {
-    await employeeService.softDelete(req.params.id, req.user?.id);
+    await employeeService.softDelete(req.params.id, req.user?.id, req.user?.role);
     return sendResponse(res, 200, "Employee deactivated");
   },
   restore: async (req: Request, res: Response) => {
-    const employee = await employeeService.restore(req.params.id, req.user?.id);
+    const employee = await employeeService.restore(req.params.id, req.user?.id, req.user?.role);
     return sendResponse(res, 200, "Employee restored", serializeEmployee(employee));
   },
   meta: async (_req: Request, res: Response) => {

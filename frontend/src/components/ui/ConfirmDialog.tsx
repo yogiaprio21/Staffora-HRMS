@@ -38,13 +38,13 @@ export const ConfirmDialog = ({
           {children ? <div className="mt-4">{children}</div> : null}
           <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
             <Dialog.Close asChild>
-              <Button type="button" variant="secondary" disabled={loading}>
+              <Button type="button" variant="outline" disabled={loading}>
                 {cancelLabel}
               </Button>
             </Dialog.Close>
             <Button
               type="button"
-              variant={tone === "danger" ? "ghost" : "primary"}
+              variant={tone === "danger" ? "danger" : "primary"}
               onClick={onConfirm}
               disabled={loading}
             >

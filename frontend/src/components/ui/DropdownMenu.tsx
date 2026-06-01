@@ -1,5 +1,6 @@
 import * as Dropdown from "@radix-ui/react-dropdown-menu";
 import type { ReactNode } from "react";
+import { Ellipsis } from "lucide-react";
 import { Button } from "./Button";
 
 type MenuItem = {
@@ -12,8 +13,9 @@ type MenuItem = {
 export const RowActionsMenu = ({ items }: { items: MenuItem[] }) => (
   <Dropdown.Root>
     <Dropdown.Trigger asChild>
-      <Button variant="secondary" type="button" className="px-3">
-        Actions
+      <Button variant="outline" type="button" className="px-3">
+        <Ellipsis size={16} />
+        Aksi
       </Button>
     </Dropdown.Trigger>
     <Dropdown.Portal>
@@ -26,7 +28,7 @@ export const RowActionsMenu = ({ items }: { items: MenuItem[] }) => (
             key={item.label}
             disabled={item.disabled}
             onSelect={item.onSelect}
-            className={`cursor-pointer rounded-md px-3 py-2 outline-none hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 ${
+            className={`flex min-h-10 cursor-pointer items-center rounded-md px-3 py-2 outline-none hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-50 ${
               item.tone === "danger" ? "text-rose-700" : "text-slate-700"
             }`}
           >

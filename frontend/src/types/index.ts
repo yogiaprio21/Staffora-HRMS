@@ -19,7 +19,7 @@ export type PaginationMeta = {
   totalPages: number;
 };
 
-export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type LeaveStatus = "PENDING" | "APPROVED" | "REJECTED" | "CANCELED";
 
 export type LeaveRequest = {
   id: string;

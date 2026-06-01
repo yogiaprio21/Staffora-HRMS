@@ -14,11 +14,11 @@ createRoot(document.getElementById("root")!).render(
     <HelmetProvider>
       <QueryClientProvider client={queryClient}>
         <ToastProvider>
-          <AuthProvider>
-            <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+          <BrowserRouter future={{ v7_relativeSplatPath: true, v7_startTransition: true }}>
+            <AuthProvider>
               <App />
-            </BrowserRouter>
-          </AuthProvider>
+            </AuthProvider>
+          </BrowserRouter>
         </ToastProvider>
       </QueryClientProvider>
     </HelmetProvider>

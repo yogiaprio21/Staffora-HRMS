@@ -1,10 +1,9 @@
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import type { ColumnDef, SortingState } from "@tanstack/react-table";
 import { Download, ShieldCheck } from "lucide-react";
 import { Card } from "../components/ui/Card";
 import { Button } from "../components/ui/Button";
 import { Badge } from "../components/ui/Badge";
-import { Select } from "../components/ui/Select";
 import { ErrorState } from "../components/ui/ErrorState";
 import { LoadingState } from "../components/ui/LoadingState";
 import { ConfirmDialog } from "../components/ui/ConfirmDialog";
@@ -26,17 +25,20 @@ import { getErrorMessage } from "../lib/errors";
 import { formatDate, formatDateTime, formatLeaveStatus } from "../lib/labels";
 import type { LeaveRequest, LeaveStatus } from "../types";
 import { useTableQueryState } from "../hooks/useTableQueryState";
+import { usePreviewGuard } from "../features/preview/previewMode";
 
-const statusVariant: Record<LeaveStatus, "success" | "warning" | "danger"> = {
+const statusVariant: Record<LeaveStatus, "success" | "warning" | "danger" | "neutral"> = {
   APPROVED: "success",
   PENDING: "warning",
-  REJECTED: "danger"
+  REJECTED: "danger",
+  CANCELED: "neutral"
 };
 
 const statusTabs: Array<{ label: string; value: "" | LeaveStatus }> = [
   { label: "Menunggu", value: "PENDING" },
   { label: "Disetujui", value: "APPROVED" },
   { label: "Ditolak", value: "REJECTED" },
+  { label: "Dibatalkan", value: "CANCELED" },
   { label: "Semua", value: "" }
 ];
 
@@ -44,6 +46,7 @@ export const LeaveApprovalPage = () => {
   const tableState = useTableQueryState({ sortBy: "createdAt", sortOrder: "desc", limit: 10 });
   const status = tableState.status || "PENDING";
   const { notify } = useToast();
+  const { isPreviewMode, guardPreviewAction } = usePreviewGuard();
   const { data, isLoading, error } = useLeaves({
     page: tableState.page,
     limit: tableState.limit,
@@ -62,11 +65,14 @@ export const LeaveApprovalPage = () => {
   const [reviewNote, setReviewNote] = useState("");
   const [exporting, setExporting] = useState(false);
 
-  const openAction = (leave: LeaveRequest, nextAction: "approve" | "reject") => {
+  const openAction = useCallback((leave: LeaveRequest, nextAction: "approve" | "reject") => {
+    if (guardPreviewAction("Mode demo tidak memproses persetujuan cuti. Masuk sebagai HR untuk menjalankan aksi ini.")) {
+      return;
+    }
     setSelectedLeave(leave);
     setAction(nextAction);
     setReviewNote("");
-  };
+  }, [guardPreviewAction]);
 
   const closeAction = () => {
     setSelectedLeave(null);
@@ -106,6 +112,9 @@ export const LeaveApprovalPage = () => {
   };
 
   const handleExport = async () => {
+    if (guardPreviewAction("Mode demo tidak mengunduh laporan. Masuk sebagai HR untuk mengekspor data asli.")) {
+      return;
+    }
     setActionError(null);
     setExporting(true);
     try {
@@ -178,13 +187,13 @@ export const LeaveApprovalPage = () => {
                 { label: "Lihat detail", onSelect: () => setDetailLeave(row.original) },
                 {
                   label: "Setujui",
-                  disabled: row.original.status !== "PENDING" || approveLeave.isPending,
+                  disabled: isPreviewMode || row.original.status !== "PENDING" || approveLeave.isPending,
                   onSelect: () => openAction(row.original, "approve")
                 },
                 {
                   label: "Tolak",
                   tone: "danger",
-                  disabled: row.original.status !== "PENDING" || rejectLeave.isPending,
+                  disabled: isPreviewMode || row.original.status !== "PENDING" || rejectLeave.isPending,
                   onSelect: () => openAction(row.original, "reject")
                 }
               ]}
@@ -193,10 +202,26 @@ export const LeaveApprovalPage = () => {
         )
       }
     ],
-    [approveLeave.isPending, rejectLeave.isPending]
+    [approveLeave.isPending, isPreviewMode, openAction, rejectLeave.isPending]
   );
 
   const sorting = tableState.sorting as SortingState;
+  const activeFilters = [
+    status && status !== "PENDING"
+      ? {
+          key: "status",
+          label: "Status",
+          value: formatLeaveStatus(status as LeaveStatus),
+          onRemove: () => tableState.setFilter("status", "")
+        }
+      : null,
+    tableState.dateFrom
+      ? { key: "dateFrom", label: "Dari", value: tableState.dateFrom, onRemove: () => tableState.setFilter("dateFrom", "") }
+      : null,
+    tableState.dateTo
+      ? { key: "dateTo", label: "Sampai", value: tableState.dateTo, onRemove: () => tableState.setFilter("dateTo", "") }
+      : null
+  ].filter(Boolean) as Array<{ key: string; label: string; value: string; onRemove: () => void }>;
 
   return (
     <div className="space-y-6">
@@ -212,9 +237,9 @@ export const LeaveApprovalPage = () => {
           </>
         }
         actions={
-          <Button variant="secondary" type="button" onClick={handleExport} disabled={exporting}>
+          <Button variant="outline" type="button" onClick={handleExport} disabled={exporting}>
             <Download size={16} />
-            {exporting ? "Mengunduh..." : "Ekspor Excel"}
+            {exporting ? "Mengunduh..." : "Unduh Excel"}
           </Button>
         }
       />
@@ -244,17 +269,12 @@ export const LeaveApprovalPage = () => {
             );
           })}
         </div>
-        <Toolbar>
-          <Select
-            label="Status"
-            value={status}
-            onChange={(event) => tableState.setFilter("status", event.target.value)}
-          >
-            <option value="">Semua status</option>
-            <option value="PENDING">Menunggu</option>
-            <option value="APPROVED">Disetujui</option>
-            <option value="REJECTED">Ditolak</option>
-          </Select>
+        <Toolbar
+          activeFilters={activeFilters}
+          onClear={tableState.clearFilters}
+          summary={`${data?.meta.total ?? 0} pengajuan sesuai filter`}
+          gridClassName="grid gap-3"
+        >
           <DateRangeField
             fromLabel="Diajukan dari"
             toLabel="Diajukan sampai"
@@ -293,10 +313,19 @@ export const LeaveApprovalPage = () => {
                       </Button>
                     {leave.status === "PENDING" ? (
                       <>
-                        <Button variant="secondary" type="button" onClick={() => openAction(leave, "approve")}>
+                        <Button
+                          type="button"
+                          disabled={isPreviewMode}
+                          onClick={() => openAction(leave, "approve")}
+                        >
                           Setujui
                         </Button>
-                        <Button variant="danger" type="button" onClick={() => openAction(leave, "reject")}>
+                        <Button
+                          variant="danger"
+                          type="button"
+                          disabled={isPreviewMode}
+                          onClick={() => openAction(leave, "reject")}
+                        >
                           Tolak
                         </Button>
                       </>
@@ -371,7 +400,7 @@ export const LeaveApprovalPage = () => {
         description={
           action === "reject"
             ? "Tambahkan alasan agar karyawan memahami keputusan HR."
-            : "Saldo cuti karyawan akan dikurangi sesuai durasi permintaan."
+            : "Sisa hak cuti karyawan akan dikurangi sesuai durasi permintaan."
         }
         confirmLabel={action === "reject" ? "Tolak" : "Setujui"}
         tone={action === "reject" ? "danger" : "default"}
@@ -389,7 +418,7 @@ export const LeaveApprovalPage = () => {
           hint={
             action === "reject"
               ? "Alasan penolakan wajib diisi dan akan terlihat oleh karyawan."
-              : "Catatan opsional membantu audit trail approval."
+              : "Catatan opsional membantu riwayat persetujuan."
           }
           value={reviewNote}
           onChange={(event) => setReviewNote(event.target.value)}

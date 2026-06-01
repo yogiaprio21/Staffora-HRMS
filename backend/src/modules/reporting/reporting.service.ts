@@ -19,7 +19,8 @@ const roleLabel: Record<string, string> = {
 const statusLabel: Record<string, string> = {
   PENDING: "Menunggu",
   APPROVED: "Disetujui",
-  REJECTED: "Ditolak"
+  REJECTED: "Ditolak",
+  CANCELED: "Dibatalkan"
 };
 
 const drawEmployeeRow = (

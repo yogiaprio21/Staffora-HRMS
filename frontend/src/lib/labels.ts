@@ -9,7 +9,8 @@ export const roleLabel: Record<Role, string> = {
 export const leaveStatusLabel: Record<LeaveStatus, string> = {
   PENDING: "Menunggu",
   APPROVED: "Disetujui",
-  REJECTED: "Ditolak"
+  REJECTED: "Ditolak",
+  CANCELED: "Dibatalkan"
 };
 
 export const activityActionLabel: Record<string, string> = {
@@ -19,7 +20,8 @@ export const activityActionLabel: Record<string, string> = {
   EMPLOYEE_RESTORED: "Karyawan dipulihkan",
   LEAVE_SUBMITTED: "Cuti diajukan",
   LEAVE_APPROVED: "Cuti disetujui",
-  LEAVE_REJECTED: "Cuti ditolak"
+  LEAVE_REJECTED: "Cuti ditolak",
+  LEAVE_CANCELED: "Cuti dibatalkan"
 };
 
 export const notificationToneLabel: Record<string, string> = {

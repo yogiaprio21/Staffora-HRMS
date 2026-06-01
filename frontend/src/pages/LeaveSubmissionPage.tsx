@@ -19,6 +19,7 @@ import { useEmployees } from "../features/employees/employeeQueries";
 import { useSubmitLeave } from "../features/leaves/leaveQueries";
 import { getErrorMessage } from "../lib/errors";
 import { calculateInclusiveDays } from "../lib/date";
+import { usePreviewGuard } from "../features/preview/previewMode";
 
 const schema = z
   .object({
@@ -37,6 +38,7 @@ type FormValues = z.infer<typeof schema>;
 export const LeaveSubmissionPage = () => {
   const { user } = useAuth();
   const { notify } = useToast();
+  const { isPreviewMode, guardPreviewAction } = usePreviewGuard();
   const [error, setError] = useState<string | null>(null);
   const submitLeave = useSubmitLeave();
   const employeesQuery = useEmployees({ page: 1, limit: 100, status: "ACTIVE" });
@@ -56,6 +58,9 @@ export const LeaveSubmissionPage = () => {
   const durationDays = calculateInclusiveDays(startDate, endDate);
 
   const onSubmit = async (values: FormValues) => {
+    if (guardPreviewAction("Mode demo tidak membuat pengajuan cuti. Masuk untuk mengirim pengajuan asli.")) {
+      return;
+    }
     setError(null);
     try {
       await submitLeave.mutateAsync({
@@ -77,12 +82,16 @@ export const LeaveSubmissionPage = () => {
     <div className="space-y-6">
       <Seo title="Ajukan Cuti" />
       <PageHeader
-        title="Ajukan Cuti"
-        eyebrow="Workflow Cuti"
-        description="Ajukan cuti dengan periode, durasi, dan alasan yang jelas agar HR dapat memproses tanpa bolak-balik klarifikasi."
+        title={user?.role === "EMPLOYEE" ? "Cuti Saya" : "Ajukan Cuti"}
+        eyebrow="Alur Cuti"
+        description={
+          user?.role === "EMPLOYEE"
+            ? "Ajukan cuti pribadi dengan periode, durasi, dan alasan yang jelas agar HR dapat memproses tanpa bolak-balik klarifikasi."
+            : "Ajukan cuti untuk diri sendiri atau bantu karyawan mengirim pengajuan dengan data yang lengkap."
+        }
         meta={
           <>
-            <Badge label={`${user?.leaveBalance ?? 0} hari saldo`} variant="success" />
+            <Badge label={`${user?.leaveBalance ?? 0} hari tersisa`} variant="success" />
             {durationDays > 0 ? <Badge label={`${durationDays} hari dipilih`} variant="warning" /> : null}
           </>
         }
@@ -139,7 +148,7 @@ export const LeaveSubmissionPage = () => {
               </p>
             </div>
             <div>
-              <p className="text-sm text-slate-500">Saldo saat ini</p>
+              <p className="text-sm text-slate-500">Sisa hak cuti</p>
               <p className="text-xl font-semibold text-slate-900">{user?.leaveBalance ?? 0} hari</p>
             </div>
             <div>
@@ -154,9 +163,9 @@ export const LeaveSubmissionPage = () => {
               <RotateCcw size={16} />
               Atur ulang
             </Button>
-            <Button type="submit" disabled={isSubmitting}>
+            <Button type="submit" disabled={isSubmitting || isPreviewMode}>
               <Send size={16} />
-              {isSubmitting ? "Mengirim..." : "Ajukan Cuti"}
+              {isPreviewMode ? "Demo lihat saja" : isSubmitting ? "Mengirim..." : "Ajukan Cuti"}
             </Button>
           </div>
         </Card>

@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 
 const labels: Record<string, string> = {
-  dashboard: "Dasbor",
+  dashboard: "Dashboard",
   employees: "Karyawan",
   new: "Tambah",
   edit: "Ubah",

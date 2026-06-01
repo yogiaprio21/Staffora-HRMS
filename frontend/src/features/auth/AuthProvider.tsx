@@ -1,20 +1,32 @@
 import { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { authApi } from "./authApi";
 import { setAccessToken } from "../../lib/api";
 import { storage } from "../../lib/storage";
 import type { Employee } from "../../types";
 import { AuthContext } from "./AuthContext";
+import { previewUser } from "../preview/previewData";
+import { isPreviewPath } from "../preview/previewMode";
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
+  const location = useLocation();
+  const previewMode = isPreviewPath(location.pathname);
+  const loginWithoutSession = location.pathname === "/login" && !storage.getUser();
   const [user, setUserState] = useState<Employee | null>(storage.getUser());
   const [accessToken, setAccessTokenState] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const effectiveUser = previewMode ? previewUser : user;
+  const effectiveLoading = previewMode || loginWithoutSession ? false : loading;
 
   useEffect(() => {
-    setAccessToken(accessToken);
-  }, [accessToken]);
+    setAccessToken(previewMode ? null : accessToken);
+  }, [accessToken, previewMode]);
 
   useEffect(() => {
+    if (previewMode || loginWithoutSession) {
+      return;
+    }
+
     const bootstrap = async () => {
       try {
         const refreshed = await authApi.refresh();
@@ -31,7 +43,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setLoading(false);
     };
     bootstrap();
-  }, []);
+  }, [loginWithoutSession, previewMode]);
 
   const login = async (payload: { email: string; password: string }) => {
     const response = await authApi.login(payload);
@@ -66,15 +78,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const value = useMemo(
     () => ({
-      user,
+      user: effectiveUser,
       accessToken,
-      loading,
+      loading: effectiveLoading,
       login,
       logout,
       refresh,
       setUser
     }),
-    [user, accessToken, loading]
+    [effectiveUser, accessToken, effectiveLoading]
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

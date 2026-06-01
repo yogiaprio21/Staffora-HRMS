@@ -8,6 +8,8 @@ import { AppError } from "../src/utils/errors";
 jest.mock("../src/modules/auth/auth.repository", () => ({
   authRepository: {
     findEmployeeByEmail: jest.fn(),
+    findEmployeeById: jest.fn(),
+    updatePassword: jest.fn(),
     createRefreshToken: jest.fn(),
     findActiveRefreshToken: jest.fn(),
     revokeRefreshToken: jest.fn(),
@@ -71,5 +73,21 @@ describe("authService", () => {
       message: "Account is inactive",
       statusCode: 403
     });
+  });
+
+  it("changes password when the current password is valid", async () => {
+    mockedAuthRepository.findEmployeeById.mockResolvedValue(await activeEmployee());
+    mockedAuthRepository.updatePassword.mockResolvedValue({} as never);
+
+    await authService.changePassword({
+      employeeId: "employee-1",
+      currentPassword: "Password123!",
+      newPassword: "Password456!"
+    });
+
+    expect(mockedAuthRepository.updatePassword).toHaveBeenCalledWith(
+      "employee-1",
+      expect.any(String)
+    );
   });
 });

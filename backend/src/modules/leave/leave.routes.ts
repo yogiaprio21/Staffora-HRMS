@@ -6,6 +6,7 @@ import { Role } from "@prisma/client";
 import { validate } from "../../middlewares/validate";
 import {
   approveLeaveSchema,
+  cancelLeaveSchema,
   leaveIdSchema,
   rejectLeaveSchema,
   listLeaveSchema,
@@ -20,6 +21,11 @@ leaveRouter.use(authenticate);
 leaveRouter.post("/", validate(submitLeaveSchema), asyncHandler(leaveController.submit));
 leaveRouter.get("/", validate(listLeaveSchema), asyncHandler(leaveController.list));
 leaveRouter.get("/:id", validate(leaveIdSchema), asyncHandler(leaveController.getById));
+leaveRouter.patch(
+  "/:id/cancel",
+  validate(cancelLeaveSchema),
+  asyncHandler(leaveController.cancel)
+);
 leaveRouter.patch(
   "/:id/approve",
   authorize([Role.SUPER_ADMIN, Role.HR]),
