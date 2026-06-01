@@ -1,0 +1,15 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#F1F5F9"/>
+  <rect x="88" y="86" width="1024" height="458" rx="36" fill="white" stroke="#CBD5E1"/>
+  <rect x="140" y="150" width="92" height="92" rx="24" fill="#020617"/>
+  <circle cx="167" cy="176" r="12" fill="#4F46E5"/>
+  <circle cx="205" cy="216" r="12" fill="#10B981"/>
+  <text x="270" y="200" font-family="Inter, Arial, sans-serif" font-size="54" font-weight="800" fill="#020617">Staffora HRMS</text>
+  <text x="270" y="260" font-family="Inter, Arial, sans-serif" font-size="28" fill="#475569">Sistem manajemen karyawan, cuti, aktivitas, dan laporan HR.</text>
+  <rect x="140" y="340" width="250" height="74" rx="18" fill="#EEF2FF"/>
+  <text x="170" y="386" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#4338CA">Data Karyawan</text>
+  <rect x="420" y="340" width="250" height="74" rx="18" fill="#ECFDF5"/>
+  <text x="450" y="386" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#047857">Cuti &amp; Approval</text>
+  <rect x="700" y="340" width="250" height="74" rx="18" fill="#F8FAFC"/>
+  <text x="730" y="386" font-family="Inter, Arial, sans-serif" font-size="24" font-weight="700" fill="#334155">Audit &amp; Laporan</text>
+</svg>

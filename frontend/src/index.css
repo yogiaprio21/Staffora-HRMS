@@ -1,0 +1,91 @@
+@import "react-day-picker/style.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-slate-50 text-slate-900 antialiased;
+  }
+}
+
+@layer utilities {
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  @keyframes fade-out {
+    from {
+      opacity: 1;
+    }
+    to {
+      opacity: 0;
+    }
+  }
+
+  @keyframes scale-in {
+    from {
+      opacity: 0;
+      transform: translate(-50%, -48%) scale(0.98);
+    }
+    to {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+  }
+
+  @keyframes slide-in {
+    from {
+      opacity: 0;
+      transform: translateX(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes slide-up {
+    from {
+      transform: translateY(16px);
+    }
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  .animate-fade-in {
+    animation: fade-in 160ms ease-out;
+  }
+
+  .animate-fade-out {
+    animation: fade-out 160ms ease-out;
+  }
+
+  .animate-scale-in {
+    animation: scale-in 160ms ease-out;
+  }
+
+  .animate-slide-in {
+    animation: slide-in 180ms ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 180ms ease-out;
+  }
+}
+
+.rdp-root {
+  --rdp-accent-color: #4f46e5;
+  --rdp-accent-background-color: #eef2ff;
+  --rdp-day_button-border-radius: 0.7rem;
+  --rdp-day_button-width: 2.35rem;
+  --rdp-day_button-height: 2.35rem;
+  font-size: 0.875rem;
+}
