@@ -7,7 +7,13 @@ Use `backend` as the service root.
 Build command:
 
 ```bash
-npm ci && npm run build && npm run prisma:migrate
+npm ci && npm run build
+```
+
+Pre-deploy command:
+
+```bash
+npm run prisma:migrate
 ```
 
 Start command:
@@ -24,7 +30,10 @@ The repository also includes `render.yaml` with:
 
 - service root: `backend`
 - health check: `/api/v1/health`
-- production build: `npm ci && npm run build && npm run prisma:migrate`
+- production build: `npm ci && npm run build`
+- production migration: `npm run prisma:migrate`
+
+If you deploy the backend as a Docker service, keep using the included Dockerfile. It uses Debian Bookworm with OpenSSL installed so Prisma can load the correct query engine on Render. Remove any manually configured `PRISMA_QUERY_ENGINE_LIBRARY` from Render because it can force the wrong Prisma binary.
 
 ## Database - Neon
 
@@ -33,6 +42,7 @@ The repository also includes `render.yaml` with:
 3. Copy the direct connection string into `DIRECT_URL`.
 4. Keep `sslmode=require` in both URLs.
 5. Run Render deploy; `npm run prisma:migrate` applies `backend/prisma/migrations`.
+6. Run `npm run seed` only once for a demo database that can be reset. Do not add seed to automatic production deploy because it clears existing data before inserting demo data.
 
 ## Frontend - Vercel
 

@@ -10,10 +10,12 @@
 ## Render Backend
 
 - Root directory: `backend`.
-- Build command: `npm ci && npm run build && npm run prisma:migrate`.
+- Build command: `npm ci && npm run build`.
+- Pre-deploy command: `npm run prisma:migrate`.
 - Start command: `npm start`.
 - Health check path: `/api/v1/health`.
 - Set env vars: `NODE_ENV`, `DATABASE_URL`, `DIRECT_URL`, `JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `CORS_ORIGINS`, `COOKIE_SECURE`.
+- Remove stale Prisma override env vars such as `PRISMA_QUERY_ENGINE_LIBRARY` if they were added manually.
 - Confirm `/api/v1/health` returns 200.
 - Confirm `/api/v1/ready` returns 200 after database migration.
 

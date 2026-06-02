@@ -3,7 +3,8 @@ services:
     name: staffora-hrms-api
     env: node
     rootDir: backend
-    buildCommand: npm ci && npm run build && npm run prisma:migrate
+    buildCommand: npm ci && npm run build
+    preDeployCommand: npm run prisma:migrate
     startCommand: npm start
     healthCheckPath: /api/v1/health
     envVars:
@@ -11,10 +12,6 @@ services:
         value: production
       - key: COOKIE_SECURE
         value: "true"
-      - key: PRISMA_CLI_BINARY_TARGETS
-        value: native,debian-openssl-3.0.x,linux-musl-openssl-3.0.x
-      - key: PRISMA_QUERY_ENGINE_LIBRARY
-        value: /app/node_modules/.prisma/client/libquery_engine-linux-musl-openssl-3.0.x.so.node
       - key: DATABASE_URL
         sync: false
       - key: DIRECT_URL
