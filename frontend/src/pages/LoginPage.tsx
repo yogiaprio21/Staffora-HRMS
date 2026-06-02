@@ -81,10 +81,10 @@ export const LoginPage = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 px-4 py-6 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-100 px-4 py-4 sm:px-6 lg:px-8 lg:py-6">
       <Seo title="Masuk" description="Masuk ke Staffora HRMS untuk mengelola data karyawan, cuti, dan laporan HR." noIndex={false} />
-      <div className="mx-auto grid min-h-[calc(100vh-3rem)] max-w-6xl overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
-        <div className="bg-slate-950 p-6 text-white sm:p-8 lg:flex lg:flex-col lg:justify-between">
+      <div className="mx-auto min-h-[calc(100vh-2rem)] max-w-md lg:grid lg:min-h-[calc(100vh-3rem)] lg:max-w-6xl lg:overflow-hidden lg:rounded-2xl lg:border lg:border-slate-200 lg:bg-white lg:shadow-sm lg:grid-cols-[1.05fr_0.95fr]">
+        <div className="hidden bg-slate-950 p-8 text-white lg:flex lg:flex-col lg:justify-between">
           <div className="space-y-8">
             <div className="inline-flex items-center gap-3">
               <span className="rounded-2xl bg-white p-3 text-slate-950">
@@ -135,15 +135,27 @@ export const LoginPage = () => {
             })}
           </div>
         </div>
-        <div className="flex items-center justify-center p-5 sm:p-8">
-        <Card className="w-full max-w-md space-y-6 p-6 sm:p-8">
+        <div className="flex min-h-[calc(100vh-2rem)] items-center justify-center lg:min-h-0 lg:p-8">
+        <Card className="w-full space-y-5 p-5 shadow-sm sm:p-7 lg:max-w-md lg:space-y-6 lg:p-8">
           <div className="space-y-2">
-            <div className="inline-flex rounded-2xl bg-slate-950 p-3 text-white">
-              <StafforaLogo compact />
+            <div className="flex items-center justify-between gap-3">
+              <div className="inline-flex rounded-2xl bg-slate-950 p-3 text-white">
+                <StafforaLogo compact />
+              </div>
+              <Link
+                to="/preview/dashboard"
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-lg border border-slate-200 px-3 text-xs font-semibold text-slate-700 transition hover:border-primary-200 hover:bg-primary-50 hover:text-primary-700 lg:hidden"
+              >
+                <PlayCircle size={15} />
+                Demo
+              </Link>
             </div>
             <div>
               <h2 className="text-2xl font-semibold text-slate-950">Masuk</h2>
               <p className="mt-1 text-sm leading-6 text-slate-500">Portal akses {APP_NAME}</p>
+            </div>
+            <div className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-600 lg:hidden">
+              Kelola data karyawan, cuti, persetujuan, dan audit dalam satu ruang kerja.
             </div>
           </div>
           <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">

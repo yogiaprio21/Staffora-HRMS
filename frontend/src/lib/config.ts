@@ -1,5 +1,14 @@
-export const API_BASE_URL =
-  import.meta.env.VITE_API_BASE_URL || "http://localhost:4000/api/v1";
+const DEFAULT_API_BASE_URL = "http://localhost:4000/api/v1";
+
+const normalizeApiBaseUrl = (value?: string) => {
+  const trimmed = (value || DEFAULT_API_BASE_URL).trim().replace(/\/+$/, "");
+  if (!trimmed) {
+    return DEFAULT_API_BASE_URL;
+  }
+  return /\/api\/v1$/i.test(trimmed) ? trimmed : `${trimmed}/api/v1`;
+};
+
+export const API_BASE_URL = normalizeApiBaseUrl(import.meta.env.VITE_API_BASE_URL);
 export const APP_NAME = import.meta.env.VITE_APP_NAME || "Staffora HRMS";
 export const APP_TAGLINE =
   import.meta.env.VITE_APP_TAGLINE || "Sistem Manajemen Karyawan yang Terpadu";
